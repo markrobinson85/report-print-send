@@ -68,7 +68,7 @@ odoo.define('base_report_to_printer.print', function(require) {
                     if (items) {
                         var new_items = [];
                         for (var i = 0; i < items.length; i++) {
-                            if (items[1].action.report_type == 'qweb-pdf') {
+                            if (items[i].action.report_type == 'qweb-pdf') {
                                 new_items.push({
                                     label: items[i].label,
                                     classname: 'oe_sidebar_print',
