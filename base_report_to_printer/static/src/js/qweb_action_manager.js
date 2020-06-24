@@ -16,10 +16,8 @@ odoo.define('base_report_to_printer.print', function(require) {
         init: function () {
             var self = this;
             this._super.apply(this, arguments);
-            self.sections.push({
-                name: 'print_direct',
-                label: _t('Direct Print')
-            });
+            self.sections.splice(1, 0, { name: 'print_direct', label: _t('Direct Print'), });
+
             self.items['print_direct'] =  [];
             var view = self.getParent();
         },
