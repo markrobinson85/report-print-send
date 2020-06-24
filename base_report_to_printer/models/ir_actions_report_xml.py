@@ -73,7 +73,7 @@ class IrActionsReportXml(models.Model):
 
         # Retrieve user default values
         user = self.env.user
-        if user.printing_action:
+        if user.printing_action and self.user_has_groups('base_report_to_printer.printing_direct_group_manager'):
             default_action = user.printing_action
         if user.printing_printer_id:
             default_printer = user.printing_printer_id

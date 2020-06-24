@@ -7,6 +7,7 @@ odoo.define('base_report_to_printer.print', function(require) {
     var Model = require('web.Model');
     var core = require('web.core');
     var formats = require('web.formats');
+    var Session = require('web.session');
 
     var _t = core._t;
     var Sidebar = require('web.Sidebar');
@@ -61,23 +62,27 @@ odoo.define('base_report_to_printer.print', function(require) {
 
         add_direct_print_toolbar: function() {
             var self = this;
-
-            var items = self.items['print'];
-            if (items) {
-                var new_items = [];
-                for (var i = 0; i < items.length; i++) {
-                    if (items[1].action.report_type == 'qweb-pdf') {
-                        new_items.push({
-                            label: items[i].label,
-                            classname: 'oe_sidebar_print',
-                            report_name: items[i].action.report_name,
-//                            active_ids: items[i].action.context.active_ids,
-                            callback: self.on_direct_print_click
-                        })
+            self.session.user_has_group('base_report_to_printer.printing_direct_group_manager').then(function(group) {
+                if (group == true) {
+                    var items = self.items['print'];
+                    if (items) {
+                        var new_items = [];
+                        for (var i = 0; i < items.length; i++) {
+                            if (items[1].action.report_type == 'qweb-pdf') {
+                                new_items.push({
+                                    label: items[i].label,
+                                    classname: 'oe_sidebar_print',
+                                    report_name: items[i].action.report_name,
+                                    callback: self.on_direct_print_click
+                                })
+                            }
+                        }
+                        self.add_items('print_direct', new_items);
                     }
                 }
-                self.add_items('print_direct', new_items);
-            }
+
+            });
+
         },
 
     });
