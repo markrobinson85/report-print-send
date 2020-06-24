@@ -39,15 +39,26 @@ class IrActionsReportXml(models.Model):
 
         Called from js
         """
+        direct_print = False
+        if report_name.endswith('_direct'):
+            direct_print = True
+
         report_obj = self.env['report']
         report = report_obj._get_report_from_name(report_name)
         if not report:
             return {}
         result = report.behaviour()[report.id]
-        serializable_result = {
-            'action': result['action'],
-            'printer_name': result['printer'].name,
-        }
+        if direct_print and result['printer'].name:
+            serializable_result = {
+                'action': 'server',
+                'printer_name': result['printer'].name,
+            }
+        else:
+            serializable_result = {
+                'action': result['action'],
+                'printer_name': result['printer'].name,
+            }
+
         return serializable_result
 
     @api.multi

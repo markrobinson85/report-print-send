@@ -11,6 +11,7 @@ class Report(models.Model):
     @api.model
     def print_document(self, record_ids, report_name, html=None, data=None):
         """ Print a document, do not return the document file """
+
         document = self.with_context(must_skip_send_to_printer=True).get_pdf(
             record_ids, report_name, html=html, data=data)
         report = self._get_report_from_name(report_name)

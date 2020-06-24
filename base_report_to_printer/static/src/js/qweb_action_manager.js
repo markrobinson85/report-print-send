@@ -5,6 +5,82 @@ odoo.define('base_report_to_printer.print', function(require) {
     var core = require('web.core');
     var framework = require('web.framework');
     var Model = require('web.Model');
+    var core = require('web.core');
+    var formats = require('web.formats');
+
+    var _t = core._t;
+    var Sidebar = require('web.Sidebar');
+
+    Sidebar.include({
+        init: function () {
+            var self = this;
+            this._super.apply(this, arguments);
+            self.sections.push({
+                name: 'print_direct',
+                label: _t('Direct Print')
+            });
+            self.items['print_direct'] =  [];
+            var view = self.getParent();
+        },
+        add_toolbar: function(toolbar) {
+            var self = this;
+            var _super = this._super.apply(this, arguments);
+            self.add_direct_print_toolbar();
+            return _super;
+        },
+
+        on_direct_print_click: function (e) {
+            // Select the first list of the current (form) view
+            // or assume the main view is a list view and use that
+            var self = this,
+                view = this.getParent();
+            var selected_ids = view.get_selected_ids();
+
+            new Model('ir.actions.report.xml')
+                .call('print_action_for_report_name', [e.report_name])
+                .then(function(print_action) {
+                    framework.unblockUI();
+                    new Model('report')
+                        .call('print_document',
+                              [selected_ids,
+                               e.report_name,
+                               ],
+                              {data: {},
+                               context: {},
+                               })
+                        .then(function(){
+                            self.do_notify(_t('Printing'),
+                                           _t('Document sent to the printer ') + print_action.printer_name);
+                        }).fail(function() {
+                            self.do_notify(_t('Error Printing'),
+                                           _t('Error when sending the document to the printer ') + print_action.printer_name);
+                        });
+                });
+            return;
+        },
+
+        add_direct_print_toolbar: function() {
+            var self = this;
+
+            var items = self.items['print'];
+            if (items) {
+                var new_items = [];
+                for (var i = 0; i < items.length; i++) {
+                    if (items[1].action.report_type == 'qweb-pdf') {
+                        new_items.push({
+                            label: items[i].label,
+                            classname: 'oe_sidebar_print',
+                            report_name: items[i].action.report_name,
+//                            active_ids: items[i].action.context.active_ids,
+                            callback: self.on_direct_print_click
+                        })
+                    }
+                }
+                self.add_items('print_direct', new_items);
+            }
+        },
+
+    });
 
     ActionManager.include({
         ir_actions_report_xml: function(action, options) {
