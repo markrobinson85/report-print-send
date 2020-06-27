@@ -78,11 +78,11 @@ class PrintingPrinter(models.Model):
         if report is not None:
 
             # get user defaults
-            if self.env.user.printer_tray_id:
+            if self.env.user.printer_tray_id and self.env.user.printer_tray_id in self.tray_ids:
                 tray = self.env.user.printer_tray_id
 
             # Retrieve report default values
-            if report.printer_tray_id:
+            if report.printer_tray_id and report.printer_tray_id in self.tray_ids:
                 tray = report.printer_tray_id
 
             # Retrieve report-user specific values
@@ -91,7 +91,7 @@ class PrintingPrinter(models.Model):
                 ('user_id', '=', self.env.uid),
                 ('action', '!=', 'user_default'),
             ], limit=1)
-            if action.printer_tray_id:
+            if action.printer_tray_id and action.printer_tray_id in self.tray_ids:
                 tray = action.printer_tray_id
 
             if tray:
