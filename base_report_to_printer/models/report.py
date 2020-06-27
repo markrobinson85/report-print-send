@@ -11,17 +11,22 @@ class Report(models.Model):
     @api.model
     def print_document(self, record_ids, report_name, html=None, data=None):
         """ Print a document, do not return the document file """
-
-        document = self.with_context(must_skip_send_to_printer=True).get_pdf(
-            record_ids, report_name, html=html, data=data)
-        report = self._get_report_from_name(report_name)
-        behaviour = report.behaviour()[report.id]
-        printer = behaviour['printer']
-        if not printer:
-            raise exceptions.Warning(
-                _('No printer configured to print this report.')
-            )
-        return printer.print_document(report, document, report.report_type)
+        for rec in record_ids:
+            document = self.with_context(must_skip_send_to_printer=True).get_pdf(
+                [rec], report_name, html=html, data=data)
+            report = self._get_report_from_name(report_name)
+            behaviour = report.behaviour()[report.id]
+            printer = behaviour['printer']
+            if not printer:
+                raise exceptions.Warning(
+                    _('No printer configured to print this report.')
+                )
+            object_name = ''
+            object = self.env[report.model].browse(rec)
+            if hasattr(object, 'display_name'):
+                object_name = self.env[report.model].browse(rec).display_name
+            res = printer.with_context(object_name=object_name).print_document(report, document, report.report_type)
+        return res
 
     @api.multi
     def _can_print_report(self, behaviour, printer, document):

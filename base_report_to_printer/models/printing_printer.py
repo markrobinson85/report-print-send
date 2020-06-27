@@ -13,6 +13,7 @@ import os
 from tempfile import mkstemp
 
 from openerp import models, fields, api
+from cups import IPPError
 
 
 _logger = logging.getLogger(__name__)
@@ -124,7 +125,7 @@ class PrintingPrinter(models.Model):
     def print_file(self, file_name, report=None, copies=1, format=None):
         """ Print a file """
         self.ensure_one()
-
+        object_name = self.env.context.get('object_name', file_name)
         connection = self.server_id._open_connection(raise_on_error=True)
         options = self.print_options(
             report=report, format=format, copies=copies)
@@ -132,10 +133,14 @@ class PrintingPrinter(models.Model):
         _logger.debug(
             'Sending job to CUPS printer %s on %s'
             % (self.system_name, self.server_id.address))
-        connection.printFile(self.system_name,
-                             file_name,
-                             file_name,
-                             options=options)
+        try:
+            connection.printFile(self.system_name,
+                                 file_name,
+                                 object_name,
+                                 options=options)
+        except IPPError as er:
+            raise UserWarning('Print Job failed %s' % str(er[0]) + ' ' + str(er[1]))
+
         _logger.info("Printing job: '%s' on %s" % (
             file_name,
             self.server_id.address,
