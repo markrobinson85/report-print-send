@@ -76,6 +76,11 @@ class PrintingPrinter(models.Model):
         tray = self.env.user.printer_tray_id
 
         if report is not None:
+
+            # get user defaults
+            if self.env.user.printer_tray_id:
+                tray = self.env.user.printer_tray_id
+
             # Retrieve report default values
             if report.printer_tray_id:
                 tray = report.printer_tray_id
