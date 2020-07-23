@@ -17,8 +17,18 @@ class ResUsers(models.Model):
     printing_action = fields.Selection(
         lambda s: s._user_available_action_types(),
     )
-    printing_printer_id = fields.Many2one(comodel_name='printing.printer',
-                                          string='Default Printer')
+    printing_printer_id = fields.Many2one(comodel_name='printing.printer', string='Default Printer')
+
+    def __init__(self, pool, cr):
+        init_res = super(ResUsers, self).__init__(pool, cr)
+
+        self.SELF_WRITEABLE_FIELDS = list(self.SELF_WRITEABLE_FIELDS)
+        self.SELF_WRITEABLE_FIELDS.extend(['printing_printer_id', 'printing_action'])
+
+        self.SELF_READABLE_FIELDS = list(self.SELF_READABLE_FIELDS)
+        self.SELF_READABLE_FIELDS.extend(['printing_printer_id', 'printing_action'])
+
+        return init_res
 
     @api.model
     def _available_action_types(self):
