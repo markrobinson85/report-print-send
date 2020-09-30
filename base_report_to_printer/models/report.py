@@ -25,7 +25,7 @@ class Report(models.Model):
             object = self.env[report.model].browse(rec)
             if hasattr(object, 'display_name'):
                 object_name = self.env[report.model].browse(rec).display_name
-            res = printer.with_context(object_name=object_name).print_document(report, document, report.report_type)
+            res = printer.with_context(object_name=object_name, model=report.model, res_id=rec).print_document(report, document, report.report_type)
         return res
 
     @api.multi
