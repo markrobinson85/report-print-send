@@ -34,6 +34,30 @@ class IrActionsReportXml(models.Model):
     )
 
     @api.model
+    def direct_print_action_for_report_id(self, report_id):
+        report_obj = self.env['report']
+        if isinstance(report_id, int):
+            report = self.env['ir.actions.report.xml'].browse(report_id)
+        else:
+            report = report_obj._get_report_from_name(report_id)
+
+        if not report:
+            return {}
+        result = report.behaviour()[report.id]
+        if result['printer'].name:
+            serializable_result = {
+                'action': 'server',
+                'printer_name': result['printer'].name,
+            }
+        else:
+            serializable_result = {
+                'action': result['action'],
+                'printer_name': result['printer'].name,
+            }
+
+        return serializable_result
+
+    @api.model
     def print_action_for_report_name(self, report_name):
         """ Returns if the action is a direct print or pdf
 
@@ -42,9 +66,10 @@ class IrActionsReportXml(models.Model):
         direct_print = False
         if report_name.endswith('_direct'):
             direct_print = True
-
         report_obj = self.env['report']
+
         report = report_obj._get_report_from_name(report_name)
+
         if not report:
             return {}
         result = report.behaviour()[report.id]

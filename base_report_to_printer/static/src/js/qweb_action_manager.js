@@ -36,13 +36,13 @@ odoo.define('base_report_to_printer.print', function(require) {
             var selected_ids = view.get_selected_ids();
 
             new Model('ir.actions.report.xml')
-                .call('print_action_for_report_name', [e.report_name])
+                .call('direct_print_action_for_report_id', [e.report_id])
                 .then(function(print_action) {
                     framework.unblockUI();
                     new Model('report')
                         .call('print_document',
                               [selected_ids,
-                               e.report_name,
+                               e.report_id,
                                ],
                               {data: {},
                                context: {},
@@ -71,6 +71,7 @@ odoo.define('base_report_to_printer.print', function(require) {
                                     label: items[i].label,
                                     classname: 'oe_sidebar_print',
                                     report_name: items[i].action.report_name,
+                                    report_id:  items[i].action.id,
                                     callback: self.on_direct_print_click
                                 })
                             }

@@ -140,6 +140,8 @@ class PrintingPrinter(models.Model):
                                  options=options)
         except IPPError as er:
             raise UserWarning('Print Job failed %s' % str(er[0]) + ' ' + str(er[1]))
+        except Exception as er:
+            raise UserWarning('Print Job failed %s' % str(er[0]) + ' ' + str(er[1]))
 
         _logger.info("Printing job: '%s' on %s" % (
             file_name,

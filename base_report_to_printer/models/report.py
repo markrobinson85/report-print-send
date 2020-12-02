@@ -8,13 +8,27 @@ from openerp import models, exceptions, _, api
 class Report(models.Model):
     _inherit = 'report'
 
+    def _get_report_from_name(self, cr, uid, report_name):
+        """Get the first record of ir.actions.report.xml having the ``report_name`` as value for
+        the field report_name.
+        """
+        report_obj = self.pool['ir.actions.report.xml']
+        qwebtypes = ['qweb-pdf', 'qweb-html']
+        if isinstance(report_name, int):
+            return report_obj.browse(cr, uid, report_name)
+        else:
+            conditions = [('report_type', 'in', qwebtypes), ('report_name', '=', report_name)]
+            idreport = report_obj.search(cr, uid, conditions)[0]
+        return report_obj.browse(cr, uid, idreport)
+
     @api.model
     def print_document(self, record_ids, report_name, html=None, data=None):
         """ Print a document, do not return the document file """
+        report = self._get_report_from_name(report_name)
         for rec in record_ids:
             document = self.with_context(must_skip_send_to_printer=True).get_pdf(
                 [rec], report_name, html=html, data=data)
-            report = self._get_report_from_name(report_name)
+
             behaviour = report.behaviour()[report.id]
             printer = behaviour['printer']
             if not printer:
